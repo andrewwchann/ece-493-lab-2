@@ -1,0 +1,82 @@
+openapi: 3.0.3
+info:
+  title: Registration Credential Validation
+  version: 1.0.0
+  description: Contract for validating registration email and password inputs.
+paths:
+  /registrations/validate-credentials:
+    post:
+      summary: Validate registration credentials
+      description: Validates email format, email uniqueness, and password strength.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CredentialValidationRequest'
+      responses:
+        '200':
+          description: Credentials are valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialValidationSuccess'
+        '422':
+          description: Credentials are invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialValidationError'
+components:
+  schemas:
+    CredentialValidationRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          description: Email address submitted for registration.
+        password:
+          type: string
+          description: Password submitted for registration.
+    CredentialValidationSuccess:
+      type: object
+      required:
+        - valid
+      properties:
+        valid:
+          type: boolean
+          enum: [true]
+          description: Indicates validation success.
+        normalizedEmail:
+          type: string
+          description: Email after trimming and normalization.
+    CredentialValidationError:
+      type: object
+      required:
+        - valid
+        - fieldErrors
+      properties:
+        valid:
+          type: boolean
+          enum: [false]
+          description: Indicates validation failure.
+        fieldErrors:
+          type: object
+          description: Field-specific validation error codes.
+          properties:
+            email:
+              type: array
+              items:
+                type: string
+                enum:
+                  - invalid_format
+                  - duplicate
+            password:
+              type: array
+              items:
+                type: string
+                enum:
+                  - weak_password
