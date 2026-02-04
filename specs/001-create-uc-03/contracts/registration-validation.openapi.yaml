@@ -1,0 +1,67 @@
+openapi: 3.0.3
+info:
+  title: Registration Validation API
+  version: "1.0.0"
+  description: Contract for submitting registration data and returning validation errors.
+paths:
+  /registrations:
+    post:
+      summary: Submit a registration form
+      description: Validates registration input and returns field-level errors when invalid.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationSubmission"
+      responses:
+        "200":
+          description: Registration accepted (handled by existing flow).
+        "400":
+          description: Validation errors found in submission.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "503":
+          description: Validation cannot be performed due to system error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericError"
+components:
+  schemas:
+    RegistrationSubmission:
+      type: object
+      description: Key-value pairs for submitted registration fields.
+      additionalProperties:
+        type: string
+    ValidationErrorResponse:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+    ValidationError:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          description: Name of the invalid field.
+        message:
+          type: string
+          description: Plain-language message describing the correction needed.
+    GenericError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Plain-language message instructing the user to try again later.
